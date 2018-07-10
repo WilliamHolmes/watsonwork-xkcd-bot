@@ -6,7 +6,7 @@ required:
  - repo
 
 toolchain:
-  name: 'watsonwork-webshot-bot'
+  name: 'watsonwork-xkcd-bot'
 
 # Github repos
 repo:
