@@ -12,7 +12,8 @@
     "ibm",
     "npm",
     "bot",
-    "app"
+    "app",
+    "xkcd"
   ],
   "license": "MIT",
   "devDependencies": {
