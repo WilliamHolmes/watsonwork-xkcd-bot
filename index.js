@@ -43,14 +43,14 @@ app.on('message-created', (message, annotation) => {
                 .on('error', err => {
                     console.log('request ERROR', err);
                 })
-                .on('end', () => {
-                    console.log('download OK', img);
+                .on('finish', () => {
+                    console.log('download OK', url, img);
                     app.sendFile(spaceId, dest);
                     del.sync(dest, { force: true });
-                    console.log('download END', img);
+                    console.log('download END', url, img);
                 });
         }).catch(err => {
-            console.log('fetch ERROR', err);
+            console.log('fetch ERROR', url, err);
             sendErrorMessage(spaceId, url, true);
         });
     });
