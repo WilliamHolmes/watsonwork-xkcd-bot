@@ -38,6 +38,7 @@ app.on('message-created', (message, annotation) => {
             const { img, num } = data;
             const dest =  `./${constants.TEMP_DIR}/xkcd_${num}.png`;
             download.image({ url: img, dest }).then(() => {
+                console.log('download OK');
                 app.sendFile(spaceId, dest);
                 del.sync(dest, { force: true });
             }).catch(err => {
