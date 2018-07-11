@@ -42,7 +42,7 @@ app.on('message-created', (message, annotation) => {
             const stream = fs.createWriteStream(dest).on('end', () => {
                 console.log('download OK', url, img);
                 app.sendFile(spaceId, dest);
-                del.sync(dest, { force: true });
+                // del.sync(dest, { force: true });
                 console.log('download END', url, img);
             });
             request(img).pipe(stream).on('error', err => console.log('request ERROR', err))
