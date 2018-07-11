@@ -33,7 +33,8 @@ app.on('message-created', (message, annotation) => {
         console.log('XKCD url', url);
         fetch(`${url}/info.0.json`).then(res => res.json()).then(({ img }) => {
             console.log('fetch IMG', img);
-            const dest =  `/${strings.chompLeft(img, constants.regex.IMG)}`;
+            // const dest =  `/${strings.chompLeft(img, constants.regex.IMG)}`;
+            const dest = `/temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
             download.image({ url: img, dest }).then(() => {
                 console.log('download OK');
