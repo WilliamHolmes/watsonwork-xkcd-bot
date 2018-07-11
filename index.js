@@ -1,16 +1,13 @@
 const _ = require('underscore');
 const download = require('image-downloader');
-const fetch = request('node-fetch');
+const fetch = require('node-fetch');
 
 const appFramework = require('watsonworkspace-bot');
 appFramework.level('verbose');
 appFramework.startServer();
 const app = appFramework.create();
 
-const UI = require('watsonworkspace-sdk').UI;
-
 const constants = require('./js/constants');
-const strings = require('./js/strings');
 
 app.authenticate().then(() => app.uploadPhoto('./appicon.jpg'));
 
