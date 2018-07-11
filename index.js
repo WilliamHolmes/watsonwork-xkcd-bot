@@ -20,7 +20,7 @@ const sendErrorMessage = (spaceId, url, invalid) => {
     app.sendMessage(spaceId, {
         actor: { name: 'Oh no!' },
         color: constants.COLOR_ERROR,
-        text: invalid ? url : `[${url}](${url})`,
+        text: `[${url}](${url})`,
         title: 'something went wrong',
         type: 'generic',
         version: '1'
@@ -35,7 +35,6 @@ app.on('message-created', (message, annotation) => {
         console.log('XKCD url', url);
         fetch(`${url}/info.0.json`).then(res => res.json()).then(({ img }) => {
             console.log('fetch IMG', img);
-
             const dest = `./temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
             const stream = fs.createWriteStream(dest).on('finish', () => {
@@ -48,7 +47,7 @@ app.on('message-created', (message, annotation) => {
             request(img).pipe(stream).on('error', err => console.log('request ERROR', err))
         }).catch(err => {
             console.log('fetch ERROR', url, err);
-            sendErrorMessage(spaceId, url, true);
+            sendErrorMessage(spaceId, url);
         });
     });
 });
