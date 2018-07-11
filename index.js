@@ -7,7 +7,7 @@ const app = appFramework.create();
 
 // const UI = require('watsonworkspace-sdk').UI;
 
-// app.authenticate().then(() => app.uploadPhoto('./appicon.jpg'));
+app.authenticate().then(() => app.uploadPhoto('./appicon.jpg'));
 
 
 app.on('message-created', (message, annotation) => {
