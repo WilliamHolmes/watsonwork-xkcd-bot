@@ -30,12 +30,10 @@ app.on('message-created', (message, annotation) => {
     console.log('CONTENT', content);
     _.each(content.match(constants.regex.XKCD), url => {
         console.log('XKCD url', url);
-        // const imageId = strings.chompLeft(url.toLowerCase(), constants.regex.KEY);
-        // console.log('XKCD imageId', imageId);
-        fetch(`${url}/info.0.json`).then(res => res.json()).then(data => {
-            console.log('fetchival data', data);
-            const { img, num } = data;
-            const dest =  `./${constants.TEMP_DIR}/xkcd_${num}.png`;
+        fetch(`${url}/info.0.json`).then(res => res.json()).then(({ img }) => {
+            console.log('fetch IMG', img);
+            const dest =  `./${strings.chompLeft(img, constants.regex.IMG)}`;
+            console.log('fetch DEST', dest);
             download.image({ url: img, dest }).then(() => {
                 console.log('download OK');
                 app.sendFile(spaceId, dest);
