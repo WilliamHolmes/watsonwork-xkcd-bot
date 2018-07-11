@@ -37,13 +37,13 @@ app.on('message-created', (message, annotation) => {
         fetch(`${url}/info.0.json`).then(res => res.json()).then(({ img }) => {
             console.log('fetch IMG', img);
             // const dest =  `/${strings.chompLeft(img, constants.regex.IMG)}`;
-            const dest = _.last(img.split('/'));
+            const dest = `./temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
-            request(img).pipe(fs.createWriteStream(dest))
+            request.get(img).pipe(fs.createWriteStream(dest))
                 .on('error', err => {
                     console.log('request ERROR', err);
                 })
-                .on('close', () => {
+                .on('end', () => {
                     console.log('download OK', img);
                     app.sendFile(spaceId, dest);
                     del.sync(dest, { force: true });
