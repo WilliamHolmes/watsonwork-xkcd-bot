@@ -1,5 +1,5 @@
 const _ = require('underscore');
-// const download = require('image-downloader');
+const del = require('delete');
 const fetch = require('node-fetch');
 
 const fs = require('fs');
@@ -39,10 +39,11 @@ app.on('message-created', (message, annotation) => {
             // const dest =  `/${strings.chompLeft(img, constants.regex.IMG)}`;
             const dest = `./temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
-            const stream = fs.createWriteStream(dest).on('end', () => {
+            const stream = fs.createWriteStream(dest).on('finish', () => {
                 console.log('download OK', url, img);
                 app.sendFile(spaceId, dest);
-                // del.sync(dest, { force: true });
+                console.log('download sendFile', spaceId, dest);
+                del.sync(dest, { force: true });
                 console.log('download END', url, img);
             });
             request(img).pipe(stream).on('error', err => console.log('request ERROR', err))

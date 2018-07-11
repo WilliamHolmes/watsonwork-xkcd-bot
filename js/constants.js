@@ -1,5 +1,5 @@
 const constants = {
-    COLOR_ERROR: '#C12228',
+    COLOR_ERROR: '#6E7B91',
     regex: {
         IMG: 'https://imgs.xkcd.com/comics/',
         XKCD: /https:\/\/xkcd.com\/([0-9]*)/gi
