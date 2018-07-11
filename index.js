@@ -39,12 +39,16 @@ app.on('message-created', (message, annotation) => {
             // const dest =  `/${strings.chompLeft(img, constants.regex.IMG)}`;
             const dest = `/temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
-            request(img).pipe(fs.createWriteStream(dest)).on('close', () => {
-                console.log('download OK', img);
-                app.sendFile(spaceId, dest);
-                del.sync(dest, { force: true });
-                console.log('download END', img);
-            });
+            request(img).pipe(fs.createWriteStream(dest))
+                .on('error', err => {
+                    console.log('request ERROR', err);
+                })
+                .on('close', () => {
+                    console.log('download OK', img);
+                    app.sendFile(spaceId, dest);
+                    del.sync(dest, { force: true });
+                    console.log('download END', img);
+                });
         }).catch(err => {
             console.log('fetch ERROR', err);
             sendErrorMessage(spaceId, url, true);
