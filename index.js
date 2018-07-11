@@ -37,7 +37,9 @@ app.on('message-created', (message, annotation) => {
             console.log('fetch IMG', img);
             const dest = `./temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
-            const stream = fs.createWriteStream(dest).on('finish', () => {
+            const stream = fs.createWriteStream(dest)
+            .on('error', err => console.log('download ERROR', err))
+            .on('finish', () => {
                 console.log('download OK', url, img);
                 app.sendFile(spaceId, dest);
                 console.log('download sendFile', spaceId, dest);
