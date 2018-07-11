@@ -33,17 +33,17 @@ app.on('message-created', (message, annotation) => {
         console.log('XKCD url', url);
         // const imageId = strings.chompLeft(url.toLowerCase(), constants.regex.KEY);
         // console.log('XKCD imageId', imageId);
-        fetchival.get(`${url}/info.0.json`).get().then(({ img, num }) => {
-            const dest =  `./${constants.TEMP_DIR}/xkcd_${num}.png`
-            download.image({ url: img, dest })
-                .then(() => {
-                    app.sendFile(spaceId, dest);
-                    del.sync(dest, { force: true });
-                })
-                .catch(err => {
-                    console.log('download ERROR', err);
-                    sendErrorMessage(spaceId, url);
-                });
+        fetchival.get(`${url}/info.0.json`).get().then(data => {
+            console.log('fetchival data', data);
+            const { img, num } = data;
+            const dest =  `./${constants.TEMP_DIR}/xkcd_${num}.png`;
+            download.image({ url: img, dest }).then(() => {
+                app.sendFile(spaceId, dest);
+                del.sync(dest, { force: true });
+            }).catch(err => {
+                console.log('download ERROR', err);
+                sendErrorMessage(spaceId, url);
+            });
         }).catch(err => {
             console.log('fetchival ERROR', err);
             sendErrorMessage(spaceId, url, true);
