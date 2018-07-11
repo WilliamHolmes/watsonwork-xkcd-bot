@@ -37,7 +37,7 @@ app.on('message-created', (message, annotation) => {
         fetch(`${url}/info.0.json`).then(res => res.json()).then(({ img }) => {
             console.log('fetch IMG', img);
             // const dest =  `/${strings.chompLeft(img, constants.regex.IMG)}`;
-            const dest = `./temp_files/${_.last(img.split('/'))}`;
+            const dest = `/temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
             request(img).pipe(fs.createWriteStream(dest)).on('close', () => {
                 console.log('download OK', img);
@@ -45,14 +45,6 @@ app.on('message-created', (message, annotation) => {
                 del.sync(dest, { force: true });
                 console.log('download END', img);
             });
-            // download.image({ url: img, dest }).then(() => {
-            //     console.log('download OK');
-            //     app.sendFile(spaceId, dest);
-            //     del.sync(dest, { force: true });
-            // }).catch(err => {
-            //     console.log('download ERROR', err);
-            //     sendErrorMessage(spaceId, url);
-            // });
         }).catch(err => {
             console.log('fetch ERROR', err);
             sendErrorMessage(spaceId, url, true);
