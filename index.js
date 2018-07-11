@@ -40,9 +40,10 @@ app.on('message-created', (message, annotation) => {
             const dest = `./temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
             request(img).pipe(fs.createWriteStream(dest)).on('close', () => {
-                console.log('download OK');
+                console.log('download OK', img);
                 app.sendFile(spaceId, dest);
                 del.sync(dest, { force: true });
+                console.log('download END', img);
             });
             // download.image({ url: img, dest }).then(() => {
             //     console.log('download OK');
