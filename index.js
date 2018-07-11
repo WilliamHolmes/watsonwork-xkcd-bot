@@ -39,7 +39,7 @@ app.on('message-created', (message, annotation) => {
             // const dest =  `/${strings.chompLeft(img, constants.regex.IMG)}`;
             const dest = `./temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
-            request.get(img).pipe(fs.createWriteStream(dest))
+            request(img).pipe(fs.createWriteStream(dest))
                 .on('error', err => {
                     console.log('request ERROR', err);
                 })
