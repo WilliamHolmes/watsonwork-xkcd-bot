@@ -1,6 +1,9 @@
 const _ = require('underscore');
-const download = require('image-downloader');
+// const download = require('image-downloader');
 const fetch = require('node-fetch');
+
+const fs = require('fs');
+const request = require('request');
 
 const appFramework = require('watsonworkspace-bot');
 appFramework.level('verbose');
@@ -10,7 +13,7 @@ const app = appFramework.create();
 require('watsonworkspace-sdk').UI;
 
 const constants = require('./js/constants');
-const strings = require('./js/strings');
+// const strings = require('./js/strings');
 
 app.authenticate().then(() => app.uploadPhoto('./appicon.jpg'));
 
@@ -36,14 +39,19 @@ app.on('message-created', (message, annotation) => {
             // const dest =  `/${strings.chompLeft(img, constants.regex.IMG)}`;
             const dest = `./temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
-            download.image({ url: img, dest }).then(() => {
+            request(img).pipe(fs.createWriteStream(dest)).on('close', () => {
                 console.log('download OK');
                 app.sendFile(spaceId, dest);
                 del.sync(dest, { force: true });
-            }).catch(err => {
-                console.log('download ERROR', err);
-                sendErrorMessage(spaceId, url);
             });
+            // download.image({ url: img, dest }).then(() => {
+            //     console.log('download OK');
+            //     app.sendFile(spaceId, dest);
+            //     del.sync(dest, { force: true });
+            // }).catch(err => {
+            //     console.log('download ERROR', err);
+            //     sendErrorMessage(spaceId, url);
+            // });
         }).catch(err => {
             console.log('fetch ERROR', err);
             sendErrorMessage(spaceId, url, true);
