@@ -85,11 +85,12 @@ app.on('actionSelected:/LATEST', (message, annotation) => {
 });
 
 app.on('actionSelected:/GET', (message, annotation, params) => {
-    xkcd.get(_.first(params)).then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
+    const comicId = _.first(params);
+    xkcd.get(comicId).then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
  });
 
 app.on('actionSelected', (message, annotation) => {
-    const { actionId } = annotation;
+    const { actionId = '' } = annotation;
     if (actionId.includes(constants.ACTION_ID)) {
         const { spaceId } = message;
         const data = JSON.parse(strings.chompLeft(actionId, constants.ACTION_ID));
