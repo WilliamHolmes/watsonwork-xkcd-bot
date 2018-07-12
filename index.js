@@ -29,16 +29,18 @@ const sendErrorMessage = (spaceId, url, invalid) => {
 
 const onError = err => console.log('request ERROR', err);
 
-const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json());
+const getFileName = imgURL => _.last(imgURL.split('/'));
+
+const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json()).then(({ img }) => ({ img, fileName: getFileName(img) }));
 
 app.on('message-created', (message, annotation) => {
     const { content = '', spaceId } = message;
     console.log('CONTENT', content);
     _.each(content.match(constants.regex.XKCD), url => {
         console.log('XKCD url', url);
-        getImageData(`${url}/info.0.json`).then(({ img }) => {
+        getImageData(url).then(({ img, fileName }) => {
             console.log('fetch IMG', img);
-            const dest = `./temp_files/${_.last(img.split('/'))}`;
+            const dest = `${constants.TEMP_DIR}/${fileName}`;
             console.log('fetch DEST', dest);
             const stream = fs.createWriteStream(dest)
             .on('error', onError)
