@@ -5,4 +5,4 @@ applications:
   name: watsonwork-xkcd-bot
   buildpack: sdk-for-nodejs
   command: npm start
-  memory: 512M
+  memory: 256M
