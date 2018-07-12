@@ -10,7 +10,7 @@ appFramework.level('verbose');
 appFramework.startServer();
 const app = appFramework.create();
 
-const UI = require('watsonworkspace-sdk').UI;
+// const UI = require('watsonworkspace-sdk').UI;
 
 const constants = require('./js/constants');
 
@@ -25,13 +25,15 @@ const sendErrorMessage = (spaceId, url) => {
         type: 'generic',
         version: '1'
     });
-}
+};
 
-const onError = err => console.log('request ERROR', err)
+const onError = err => console.log('request ERROR', err);
 
 const getImageName = img => _.last(img.split('/'));
 
-const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json()).then(data => ({ ...data, name: getImageName(data.img) }));
+const getImageData = url => fetch(`${url}/${constants.URL_EXT}`)
+    .then(res => res.json())
+    .then(data => ({ ...data, name: getImageName(data.img) }));
 
 app.on('message-created', message => {
     const { content = '', spaceId } = message;
@@ -45,6 +47,6 @@ app.on('message-created', message => {
                 del.sync(dest, { force: true });
             });
             request(img).pipe(stream).on('error', onError)
-        }).catch(err => sendErrorMessage(spaceId, url));
+        }).catch(() => sendErrorMessage(spaceId, url));
     });
 });
