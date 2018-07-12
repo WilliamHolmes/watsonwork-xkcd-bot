@@ -65,9 +65,8 @@ const onComicError = (message, annotation, error) => {
 }
 
 const onComicShared = (message, annotation, data) => {
-    const { userId } = message;
     const { title, num } = data;
-    app.sendTargetedMessage(userId, annotation, UI.generic(`Comic #${num} ${title}`, constants.COMIC_SHARED))
+    postAnnotation(message, annotation,`Comic #${num} ${title}`, constants.COMIC_SHARED);
 }
 
 app.on('message-created', message => {
