@@ -2,8 +2,6 @@ const _ = require('underscore');
 const del = require('delete');
 const fetch = require('node-fetch');
 
-const xkcd = require('xkcd-api');
-
 const fs = require('fs');
 const request = require('request');
 
@@ -15,6 +13,7 @@ const app = appFramework.create();
 const UI = require('watsonworkspace-sdk').UI;
 
 const constants = require('./js/constants');
+const xkcd = require('./js/xkcd');
 
 app.authenticate().then(() => app.uploadPhoto('./appicon.jpg'));
 
@@ -29,11 +28,7 @@ const sendErrorMessage = (spaceId, url, invalid) => {
     });
 }
 
-const onError = err => console.log('request ERROR', err);
-
 const getName = url => _.last(url.split('/'));
-
-// const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json()).then(({ img }) => ({ img, fileName: getFileName(img) }));
 
 const postComic =  (data, spaceId) => {
     const { img } = data;
@@ -44,38 +39,32 @@ const postComic =  (data, spaceId) => {
         app.sendFile(spaceId, dest);
         del.sync(dest, { force: true });
     });
-    request(img).pipe(stream).on('error', onError);
+    request(img).pipe(stream).on('error', console.error);
 }
 
 app.on('message-created', message => {
     const { content = '', spaceId } = message;
     _.each(content.match(constants.regex.XKCD), url => {
-        xkcd.get(getName(url), (err, data) => {
-            if(err) {
-                sendErrorMessage(spaceId, url);
-            } else {
-                postComic(data);
-            }
-        });
+        xkcd.get(getName(url)).then(res => postComic(res, spaceId)).catch(() => sendErrorMessage(spaceId, url));
     });
 });
 
 app.on('actionSelected:/RANDOM', (message, annotation) => {
-    xkcd.random((err, res) => {
+    xkcd.random().then(res => {
         const { userId } = message;
         app.sendTargetedMessage(userId, annotation, UI.generic(err, res));
     });
 });
 
 app.on('actionSelected:/LATEST', (message, annotation) => {
-    xkcd.latest((err, res) => {
+    xkcd.latest().then(res => {
         const { userId } = message;
         app.sendTargetedMessage(userId, annotation, UI.generic(err, res));
     });
 });
 
 app.on('actionSelected:/GET', (message, annotation, params) => {
-    xkcd.get(_.first(params), (err, res) => {
+    xkcd.get(_.first(params)).then(res => {
         const { userId } = message;
         app.sendTargetedMessage(userId, annotation, UI.generic(err, res));
     });
