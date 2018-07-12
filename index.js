@@ -1,6 +1,6 @@
 const _ = require('underscore');
 const del = require('delete');
-const fetch = require('node-fetch');
+// const fetch = require('node-fetch');
 
 const fs = require('fs');
 const request = require('request');
@@ -31,7 +31,8 @@ const onError = err => console.log('request ERROR', err);
 
 const getFileName = imgURL => _.last(imgURL.split('/'));
 
-const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json()).then(({ img }) => ({ img, fileName: getFileName(img) }));
+// const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json()).then(({ img }) => ({ img, fileName: getFileName(img) }));
+const getImageData = url => request(`${url}/${constants.URL_EXT}`).then(res => JSON.parse(res)).then(({ img }) => ({ img, fileName: getFileName(img) }));
 
 app.on('message-created', (message, annotation) => {
     const { content = '', spaceId } = message;
