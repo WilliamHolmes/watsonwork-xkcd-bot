@@ -27,6 +27,8 @@ const sendErrorMessage = (spaceId, url, invalid) => {
     });
 }
 
+const onError = err => console.log('request ERROR', err);
+
 
 app.on('message-created', (message, annotation) => {
     const { content = '', spaceId } = message;
@@ -38,7 +40,7 @@ app.on('message-created', (message, annotation) => {
             const dest = `./temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
             const stream = fs.createWriteStream(dest)
-            .on('error', err => console.log('download ERROR', err))
+            .on('error', onError)
             .on('finish', () => {
                 console.log('download OK', url, img);
                 app.sendFile(spaceId, dest);
@@ -46,10 +48,7 @@ app.on('message-created', (message, annotation) => {
                 del.sync(dest, { force: true });
                 console.log('download END', url, img);
             });
-            request(img).pipe(stream).on('error', err => console.log('request ERROR', err))
-        }).catch(err => {
-            console.log('fetch ERROR', url, err);
-            sendErrorMessage(spaceId, url);
-        });
+            request(img).pipe(stream).on('error', onError)
+        }).catch(err => sendErrorMessage(spaceId, url));
     });
 });
