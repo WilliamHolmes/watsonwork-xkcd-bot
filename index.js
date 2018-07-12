@@ -52,10 +52,10 @@ const postAnnotation = (message, annotation, title = '', description = '') => {
 
 const postCard = (message, annotation, data) => {
     const { userId } = message;
-    const { alt, title, num, day, month, year } = data;
+    const { alt, title, num, day, month, year, img } = data;
     const date = +(new Date(`${month}/${day}/${year}`));
     const subTitle = `Comic #${num}`;
-    const actionId = `${constants.ACTION_ID}${JSON.stringify({ alt, title, num, day, month, year })}`;
+    const actionId = `${constants.ACTION_ID}${JSON.stringify({ alt, title, num, day, month, year, img })}`;
     const card = UI.card(title, subTitle, alt, [UI.cardButton(constants.BUTTON_SHARE, actionId)], date);
     app.sendTargetedMessage(userId, annotation, [card]);
 }
