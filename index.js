@@ -33,22 +33,15 @@ const getName = url => _.last(url.split('/'));
 const postComic =  (data, spaceId) => {
     const { img } = data;
     const dest = `${constants.TEMP_DIR}/${getName(img)}`;
-    const stream = fs.createWriteStream(dest)
-    .on('error', console.error)
-    .on('finish', () => {
-        app.sendFile(spaceId, dest);
-        del.sync(dest, { force: true });
-    });
-    request(img).pipe(stream).on('error', console.error);
-}
-
-const postCard = (message, annotation, data) => {
-    const { userId } = message;
-    const { alt, title, num, day, month, year } = data;
-    const date = +(new Date(`${month}/${day}/${year}`));
-    const subTitle = `Comic #${num}`;
-    const card = UI.card(title, subTitle, alt, [UI.cardButton(constants.BUTTON_SHARE, 'some_action_id')], date);
-    app.sendTargetedMessage(userId, annotation, [card]);
+    return new Promise((resolve, reject) => {
+        request(img).pipe(fs.createWriteStream(dest)
+        .on('error', reject)
+        .on('finish', () => {
+            app.sendFile(spaceId, dest);
+            del.sync(dest, { force: true });
+            resolve();
+        })).on('error', reject);
+    })
 }
 
 const postAnnotation = (message, annotation, title = '', description = '') => {
@@ -56,8 +49,24 @@ const postAnnotation = (message, annotation, title = '', description = '') => {
     app.sendTargetedMessage(userId, annotation, UI.generic(title, description));
 }
 
-const onCardError = (message, annotation, error) => {
+const postCard = (message, annotation, data) => {
+    const { userId } = message;
+    const { alt, title, num, day, month, year } = data;
+    const date = +(new Date(`${month}/${day}/${year}`));
+    const subTitle = `Comic #${num}`;
+    const actionId = `${constants.ACTION_ID}${JSON.stringify({ alt, title, num, day, month, year })}`;
+    const card = UI.card(title, subTitle, alt, [UI.cardButton(constants.BUTTON_SHARE, actionId)], date);
+    app.sendTargetedMessage(userId, annotation, [card]);
+}
+
+const onComicError = (message, annotation, error) => {
     postAnnotation(message, annotation, constants.NOT_FOUND, error);
+}
+
+onComicShared = (message, annotation, data) => {
+    const { userId } = message;
+    const { title, num } = data;
+    app.sendTargetedMessage(userId, annotation, UI.generic(`Comic #${num} ${title}`, constants.COMIC_SHARED))
 }
 
 app.on('message-created', message => {
@@ -68,13 +77,22 @@ app.on('message-created', message => {
 });
 
 app.on('actionSelected:/RANDOM', (message, annotation) => {
-    xkcd.random().then(data => postCard(message, annotation, data)).catch(error => onCardError(message, annotation, error));
+    xkcd.random().then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
 });
 
 app.on('actionSelected:/LATEST', (message, annotation) => {
-    xkcd.latest().then(data => postCard(message, annotation, data)).catch(error => onCardError(message, annotation, error));
+    xkcd.latest().then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
 });
 
 app.on('actionSelected:/GET', (message, annotation, params) => {
-    xkcd.get(_.first(params)).then(data => postCard(message, annotation, data)).catch(error => onCardError(message, annotation, error));
+    xkcd.get(_.first(params)).then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
  });
+
+app.on('actionSelected', (message, annotation) => {
+    const { actionId } = annotation;
+    if (actionId.includes(constants.ACTION_ID)) {
+        const { spaceId } = message;
+        const data = JSON.parse(strings.chompLeft(actionId, constants.ACTION_ID));
+        postComic(data, spaceId).then(() => onComicShared(message, annotation, data)).catch(err => onComicError(message, annotation, error));
+    }
+});
