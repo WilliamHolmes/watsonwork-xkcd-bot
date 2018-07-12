@@ -35,40 +35,25 @@ const getFileName = imgURL => _.last(imgURL.split('/'));
 
 const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json()).then(({ img }) => ({ img, fileName: getFileName(img) }));
 
-
-const getComic = (message, annotation, data) => {
-    const { err, res } = data;
-    if (err) {
-        const { userId } = message;
-        app.sendTargetedMessage(userId, annotation, UI.generic(constants.NOT_FOUND, ''))
-    } else {
-        sendComic(message, res)
-    }
-}
-
-const sendComic = (message, data) => {
-    const { img } = data;
-    const fileName = getFileName(img);
-    const dest = `${constants.TEMP_DIR}/${fileName}`;
-    const stream = fs.createWriteStream(dest)
-        .on('error', onError)
-        .on('finish', () => {
-            app.sendFile(message.spaceId, dest);
-            del.sync(dest, { force: true });
-        });
-    request(img).pipe(stream).on('error', onError)
-}
+const onComicData = (err, res) => console.log('random', err, res);
 
 app.on('message-created', message => {
     const { content = '', spaceId } = message;
     _.each(content.match(constants.regex.XKCD), url => {
-        getImageData(url).then(data => sendComic(message, data)).catch(err => sendErrorMessage(spaceId, url));
+        getImageData(url).then(({ img, fileName }) => {
+            const dest = `${constants.TEMP_DIR}/${fileName}`;
+            const stream = fs.createWriteStream(dest)
+            .on('error', onError)
+            .on('finish', () => {
+                app.sendFile(spaceId, dest);
+                del.sync(dest, { force: true });
+            });
+            request(img).pipe(stream).on('error', onError)
+        }).catch(() => sendErrorMessage(spaceId, url));
     });
 });
 
-app.on('actionSelected:/random', (message, annotation, params) => {
-    xkcd.random(({ ...data }) => getComic(message, annotation, data));
-});
+app.on('actionSelected:/random', () => xkcd.random(onComicData));
 
 app.on('actionSelected:/latest', (message, annotation, params) => {
     console.log('actionSelected latest', message, annotation, params);
