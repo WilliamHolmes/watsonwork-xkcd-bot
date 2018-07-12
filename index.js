@@ -2,6 +2,8 @@ const _ = require('underscore');
 const del = require('delete');
 const fetch = require('node-fetch');
 
+const xkcd = require('xkcd-api');
+
 const fs = require('fs');
 const request = require('request');
 
@@ -48,3 +50,17 @@ app.on('message-created', message => {
         }).catch(err => sendErrorMessage(spaceId, url));
     });
 });
+
+app.on('actionSelected:/random', (message, annotation, params) => {
+    xkcd.random((err, res) => {
+        console.log('random', err, res);
+    });
+});
+
+app.on('actionSelected:/latest', (message, annotation, params) => {
+    console.log('actionSelected latest', message, annotation, params);
+});
+
+app.on('actionSelected:/get', (message, annotation, params) => {
+    console.log('actionSelected get', message, annotation, params);
+ });
