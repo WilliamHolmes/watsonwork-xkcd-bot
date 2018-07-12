@@ -4,7 +4,8 @@ const constants = {
         IMG: 'https://imgs.xkcd.com/comics/',
         XKCD: /https:\/\/xkcd.com\/([0-9a-z]*)/gmi
     },
-    TEMP_DIR: './temp_files'
+    TEMP_DIR: './temp_files',
+    URL_EXT: 'info.0.json'
 }
 
 module.exports = constants;

@@ -16,7 +16,7 @@ const constants = require('./js/constants');
 
 app.authenticate().then(() => app.uploadPhoto('./appicon.jpg'));
 
-const sendErrorMessage = (spaceId, url, invalid) => {
+const sendErrorMessage = (spaceId, url) => {
     app.sendMessage(spaceId, {
         actor: { name: 'Oh no!' },
         color: constants.COLOR_ERROR,
@@ -27,29 +27,24 @@ const sendErrorMessage = (spaceId, url, invalid) => {
     });
 }
 
+const onError = err => console.log('request ERROR', err)
 
-app.on('message-created', (message, annotation) => {
+const getImageName = img => _.last(img.split('/'));
+
+const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json()).then(data => ({ ...data, name: getImageName(data.img) }));
+
+app.on('message-created', message => {
     const { content = '', spaceId } = message;
-    console.log('CONTENT', content);
     _.each(content.match(constants.regex.XKCD), url => {
-        console.log('XKCD url', url);
-        fetch(`${url}/info.0.json`).then(res => res.json()).then(({ img }) => {
-            console.log('fetch IMG', img);
-            const dest = `./temp_files/${_.last(img.split('/'))}`;
-            console.log('fetch DEST', dest);
+        getImageData(url).then(({ img, name }) => {
+            const dest = `${constants.TEMP_DIR}/${name}`;
             const stream = fs.createWriteStream(dest)
-            .on('error', err => console.log('download ERROR', err))
+            .on('error', onError)
             .on('finish', () => {
-                console.log('download OK', url, img);
                 app.sendFile(spaceId, dest);
-                console.log('download sendFile', spaceId, dest);
                 del.sync(dest, { force: true });
-                console.log('download END', url, img);
             });
-            request(img).pipe(stream).on('error', err => console.log('request ERROR', err))
-        }).catch(err => {
-            console.log('fetch ERROR', url, err);
-            sendErrorMessage(spaceId, url);
-        });
+            request(img).pipe(stream).on('error', onError)
+        }).catch(err => sendErrorMessage(spaceId, url));
     });
 });
