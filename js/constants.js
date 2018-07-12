@@ -12,8 +12,8 @@ const constants = {
     TEMP_DIR: './temp_files',
     URL_EXT: 'info.0.json',
     BUTTON_SHARE: 'Share With Space',
-    NOT_FOUND: '404 Comic Not Found',
-    COMIC_SHARED: 'Comic - Shared With Space',
+    NOT_FOUND: '404 - Comic Not Found',
+    COMIC_SHARED: '200 - Comic Shared With Space',
 }
 
 module.exports = constants;
