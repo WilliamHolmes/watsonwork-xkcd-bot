@@ -35,21 +35,14 @@ const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res
 
 app.on('message-created', (message, annotation) => {
     const { content = '', spaceId } = message;
-    console.log('CONTENT', content);
     _.each(content.match(constants.regex.XKCD), url => {
-        console.log('XKCD url', url);
         getImageData(url).then(({ img, fileName }) => {
-            console.log('fetch IMG', img);
             const dest = `${constants.TEMP_DIR}/${fileName}`;
-            console.log('fetch DEST', dest);
             const stream = fs.createWriteStream(dest)
             .on('error', onError)
             .on('finish', () => {
-                console.log('download OK', url, img);
                 app.sendFile(spaceId, dest);
-                console.log('download sendFile', spaceId, dest);
                 del.sync(dest, { force: true });
-                console.log('download END', url, img);
             });
             request(img).pipe(stream).on('error', onError)
         }).catch(err => sendErrorMessage(spaceId, url));
