@@ -66,7 +66,7 @@ const onComicError = (message, annotation, error) => {
 
 const onComicShared = (message, annotation, data) => {
     const { title, num } = data;
-    postAnnotation(message, annotation, constants.COMIC_SHARED, `Comic #${num} ${title}`);
+    postAnnotation(message, annotation, `Comic #${num} - ${constants.COMIC_SHARED}`, title);
 }
 
 app.on('message-created', message => {
