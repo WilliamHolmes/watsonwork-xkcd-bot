@@ -35,7 +35,7 @@ const getFileName = imgURL => _.last(imgURL.split('/'));
 
 const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json()).then(({ img }) => ({ img, fileName: getFileName(img) }));
 
-const onComicData = (err, res) => console.log('random', err, res);
+// const onComicData = (err, res) => console.log('random', err, res);
 
 app.on('message-created', message => {
     const { content = '', spaceId } = message;
@@ -53,7 +53,12 @@ app.on('message-created', message => {
     });
 });
 
-app.on('actionSelected:/RANDOM', () => xkcd.random(onComicData));
+app.on('actionSelected:/RANDOM', (message, annotation, params) => {
+    xkcd.random((err, res) => {
+        const { userId } = message;
+        app.sendTargetedMessage(userId, annotation, UI.generic(err, res));
+    });
+});
 
 app.on('actionSelected:/LATEST', (message, annotation, params) => {
     console.log('actionSelected latest', message, annotation, params);
