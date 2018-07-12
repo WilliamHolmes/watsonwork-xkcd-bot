@@ -31,39 +31,52 @@ const sendErrorMessage = (spaceId, url, invalid) => {
 
 const onError = err => console.log('request ERROR', err);
 
-const getFileName = imgURL => _.last(imgURL.split('/'));
+const getName = url => _.last(url.split('/'));
 
-const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json()).then(({ img }) => ({ img, fileName: getFileName(img) }));
+// const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json()).then(({ img }) => ({ img, fileName: getFileName(img) }));
 
-// const onComicData = (err, res) => console.log('random', err, res);
+const postComic =  (data, spaceId) => {
+    const { img } = data;
+    const dest = `${constants.TEMP_DIR}/${getName(img)}`;
+    const stream = fs.createWriteStream(dest)
+    .on('error', onError)
+    .on('finish', () => {
+        app.sendFile(spaceId, dest);
+        del.sync(dest, { force: true });
+    });
+    request(img).pipe(stream).on('error', onError);
+}
 
 app.on('message-created', message => {
     const { content = '', spaceId } = message;
     _.each(content.match(constants.regex.XKCD), url => {
-        getImageData(url).then(({ img, fileName }) => {
-            const dest = `${constants.TEMP_DIR}/${fileName}`;
-            const stream = fs.createWriteStream(dest)
-            .on('error', onError)
-            .on('finish', () => {
-                app.sendFile(spaceId, dest);
-                del.sync(dest, { force: true });
-            });
-            request(img).pipe(stream).on('error', onError);
-        }).catch(() => sendErrorMessage(spaceId, url));
+        xkcd.get(getName(url), (err, data) => {
+            if(err) {
+                sendErrorMessage(spaceId, url);
+            } else {
+                postComic(data);
+            }
+        });
     });
 });
 
-app.on('actionSelected:/RANDOM', (message, annotation, params) => {
+app.on('actionSelected:/RANDOM', (message, annotation) => {
     xkcd.random((err, res) => {
         const { userId } = message;
         app.sendTargetedMessage(userId, annotation, UI.generic(err, res));
     });
 });
 
-app.on('actionSelected:/LATEST', (message, annotation, params) => {
-    console.log('actionSelected latest', message, annotation, params);
+app.on('actionSelected:/LATEST', (message, annotation) => {
+    xkcd.latest((err, res) => {
+        const { userId } = message;
+        app.sendTargetedMessage(userId, annotation, UI.generic(err, res));
+    });
 });
 
 app.on('actionSelected:/GET', (message, annotation, params) => {
-    console.log('actionSelected get', message, annotation, params);
+    xkcd.get(_.first(params), (err, res) => {
+        const { userId } = message;
+        app.sendTargetedMessage(userId, annotation, UI.generic(err, res));
+    });
  });
