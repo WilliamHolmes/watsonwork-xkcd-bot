@@ -52,20 +52,20 @@ app.on('message-created', message => {
 app.on('actionSelected:/RANDOM', (message, annotation) => {
     xkcd.random().then(res => {
         const { userId } = message;
-        app.sendTargetedMessage(userId, annotation, UI.generic(err, res));
+        app.sendTargetedMessage(userId, annotation, UI.generic('Comic', res));
     });
 });
 
 app.on('actionSelected:/LATEST', (message, annotation) => {
     xkcd.latest().then(res => {
         const { userId } = message;
-        app.sendTargetedMessage(userId, annotation, UI.generic(err, res));
+        app.sendTargetedMessage(userId, annotation, UI.generic('Comic', res));
     });
 });
 
 app.on('actionSelected:/GET', (message, annotation, params) => {
     xkcd.get(_.first(params)).then(res => {
         const { userId } = message;
-        app.sendTargetedMessage(userId, annotation, UI.generic(err, res));
+        app.sendTargetedMessage(userId, annotation, UI.generic('Comic', res));
     });
  });
