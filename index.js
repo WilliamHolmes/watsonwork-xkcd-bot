@@ -29,13 +29,14 @@ const sendErrorMessage = (spaceId, url, invalid) => {
 
 const onError = err => console.log('request ERROR', err);
 
+const getImageData = url => fetch(`${url}/${constants.URL_EXT}`).then(res => res.json());
 
 app.on('message-created', (message, annotation) => {
     const { content = '', spaceId } = message;
     console.log('CONTENT', content);
     _.each(content.match(constants.regex.XKCD), url => {
         console.log('XKCD url', url);
-        fetch(`${url}/info.0.json`).then(res => res.json()).then(({ img }) => {
+        getImageData(`${url}/info.0.json`).then(({ img }) => {
             console.log('fetch IMG', img);
             const dest = `./temp_files/${_.last(img.split('/'))}`;
             console.log('fetch DEST', dest);
