@@ -13,6 +13,7 @@ const app = appFramework.create();
 const UI = require('watsonworkspace-sdk').UI;
 
 const constants = require('./js/constants');
+const strings = require('./js/strings');
 const xkcd = require('./js/xkcd');
 
 app.authenticate().then(() => app.uploadPhoto('./appicon.jpg'));
@@ -63,7 +64,7 @@ const onComicError = (message, annotation, error) => {
     postAnnotation(message, annotation, constants.NOT_FOUND, error);
 }
 
-onComicShared = (message, annotation, data) => {
+const onComicShared = (message, annotation, data) => {
     const { userId } = message;
     const { title, num } = data;
     app.sendTargetedMessage(userId, annotation, UI.generic(`Comic #${num} ${title}`, constants.COMIC_SHARED))
