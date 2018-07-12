@@ -48,17 +48,17 @@ app.on('message-created', message => {
                 app.sendFile(spaceId, dest);
                 del.sync(dest, { force: true });
             });
-            request(img).pipe(stream).on('error', onError)
+            request(img).pipe(stream).on('error', onError);
         }).catch(() => sendErrorMessage(spaceId, url));
     });
 });
 
-app.on('actionSelected:/random', () => xkcd.random(onComicData));
+app.on('actionSelected:/RANDOM', () => xkcd.random(onComicData));
 
-app.on('actionSelected:/latest', (message, annotation, params) => {
+app.on('actionSelected:/LATEST', (message, annotation, params) => {
     console.log('actionSelected latest', message, annotation, params);
 });
 
-app.on('actionSelected:/get', (message, annotation, params) => {
+app.on('actionSelected:/GET', (message, annotation, params) => {
     console.log('actionSelected get', message, annotation, params);
  });
