@@ -51,22 +51,30 @@ const postCard = (message, annotation, data) => {
     app.sendTargetedMessage(userId, annotation, [card]);
 }
 
+const postAnnotation = (message, annotation, title = '', description = '') => {
+    const { userId } = message;
+    app.sendTargetedMessage(userId, annotation, UI.generic(title, description));
+}
+
+const onCardError = (message, annotation, error) => {
+    postAnnotation(message, annotation, constants.NOT_FOUND, error);
+}
+
 app.on('message-created', message => {
     const { content = '', spaceId } = message;
     _.each(content.match(constants.regex.XKCD), url => {
-        const id = getName(url);
-        xkcd.get(id).then(res => postComic(res, spaceId)).catch(() => sendErrorMessage(spaceId, url));
+        xkcd.get(getName(url)).then(data => postComic(data, spaceId)).catch(() => sendErrorMessage(spaceId, url));
     });
 });
 
 app.on('actionSelected:/RANDOM', (message, annotation) => {
-    xkcd.random().then(res => postCard(message, annotation, res));
+    xkcd.random().then(data => postCard(message, annotation, data)).catch(error => onCardError(message, annotation, error));
 });
 
 app.on('actionSelected:/LATEST', (message, annotation) => {
-    xkcd.latest().then(res => postCard(message, annotation, res));
+    xkcd.latest().then(data => postCard(message, annotation, data)).catch(error => onCardError(message, annotation, error));
 });
 
 app.on('actionSelected:/GET', (message, annotation, params) => {
-    xkcd.get(_.first(params)).then(res => postCard(message, annotation, res));
+    xkcd.get(_.first(params)).then(data => postCard(message, annotation, data)).catch(error => onCardError(message, annotation, error));
  });
