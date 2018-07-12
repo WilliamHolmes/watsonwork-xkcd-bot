@@ -1,6 +1,6 @@
 const _ = require('underscore');
 const del = require('delete');
-const fetch = require('node-fetch');
+// const fetch = require('node-fetch');
 
 const fs = require('fs');
 const request = require('request');
@@ -17,7 +17,7 @@ const xkcd = require('./js/xkcd');
 
 app.authenticate().then(() => app.uploadPhoto('./appicon.jpg'));
 
-const sendErrorMessage = (spaceId, url, invalid) => {
+const sendErrorMessage = (spaceId, url) => {
     app.sendMessage(spaceId, {
         actor: { name: 'Oh no!' },
         color: constants.COLOR_ERROR,
@@ -32,9 +32,10 @@ const getName = url => _.last(url.split('/'));
 
 const postComic =  (data, spaceId) => {
     const { img } = data;
+    console.log('postComic', img);
     const dest = `${constants.TEMP_DIR}/${getName(img)}`;
     const stream = fs.createWriteStream(dest)
-    .on('error', onError)
+    .on('error', console.error)
     .on('finish', () => {
         app.sendFile(spaceId, dest);
         del.sync(dest, { force: true });
@@ -45,7 +46,8 @@ const postComic =  (data, spaceId) => {
 app.on('message-created', message => {
     const { content = '', spaceId } = message;
     _.each(content.match(constants.regex.XKCD), url => {
-        xkcd.get(getName(url)).then(res => postComic(res, spaceId)).catch(() => sendErrorMessage(spaceId, url));
+        const id = getName(url);
+        xkcd.get(id).then(res => postComic(res, spaceId)).catch(() => sendErrorMessage(spaceId, url));
     });
 });
 
