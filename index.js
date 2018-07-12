@@ -32,7 +32,6 @@ const getName = url => _.last(url.split('/'));
 
 const postComic =  (data, spaceId) => {
     const { img } = data;
-    console.log('postComic', img);
     const dest = `${constants.TEMP_DIR}/${getName(img)}`;
     const stream = fs.createWriteStream(dest)
     .on('error', console.error)
@@ -61,7 +60,10 @@ app.on('actionSelected:/RANDOM', (message, annotation) => {
 app.on('actionSelected:/LATEST', (message, annotation) => {
     xkcd.latest().then(res => {
         const { userId } = message;
-        app.sendTargetedMessage(userId, annotation, UI.generic('Comic', res));
+        const { alt = '', title = '', subTitle = '', day, month, year } = res;
+        const date = +(new Date(`${month}/${day}/${year}`));
+        const card = UI.card(title, subTitle, alt, [UI.cardButton(constants.BUTTON_SHARE, 'some_action_id')], date);
+        app.sendTargetedMessage(userId, annotation, [card]);
     });
 });
 

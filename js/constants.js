@@ -5,7 +5,8 @@ const constants = {
         XKCD: /https:\/\/xkcd.com\/([0-9a-z]*)/gmi
     },
     TEMP_DIR: './temp_files',
-    URL_EXT: 'info.0.json'
+    URL_EXT: 'info.0.json',
+    BUTTON_SHARE: 'Share With Space'
 }
 
 module.exports = constants;
