@@ -42,6 +42,14 @@ const postComic =  (data, spaceId) => {
     request(img).pipe(stream).on('error', console.error);
 }
 
+const postCard = (message, annotation, data) => {
+    const { userId } = message;
+    const { alt = '', title = '', subTitle = '', day, month, year } = data;
+    const date = +(new Date(`${month}/${day}/${year}`));
+    const card = UI.card(title, subTitle, alt, [UI.cardButton(constants.BUTTON_SHARE, 'some_action_id')], date);
+    app.sendTargetedMessage(userId, annotation, [card]);
+}
+
 app.on('message-created', message => {
     const { content = '', spaceId } = message;
     _.each(content.match(constants.regex.XKCD), url => {
@@ -51,25 +59,13 @@ app.on('message-created', message => {
 });
 
 app.on('actionSelected:/RANDOM', (message, annotation) => {
-    xkcd.random().then(res => {
-        const { userId } = message;
-        app.sendTargetedMessage(userId, annotation, UI.generic('Comic', res));
-    });
+    xkcd.random().then(res => postCard(message, annotation, res));
 });
 
 app.on('actionSelected:/LATEST', (message, annotation) => {
-    xkcd.latest().then(res => {
-        const { userId } = message;
-        const { alt = '', title = '', subTitle = '', day, month, year } = res;
-        const date = +(new Date(`${month}/${day}/${year}`));
-        const card = UI.card(title, subTitle, alt, [UI.cardButton(constants.BUTTON_SHARE, 'some_action_id')], date);
-        app.sendTargetedMessage(userId, annotation, [card]);
-    });
+    xkcd.latest().then(res => postCard(message, annotation, res));
 });
 
 app.on('actionSelected:/GET', (message, annotation, params) => {
-    xkcd.get(_.first(params)).then(res => {
-        const { userId } = message;
-        app.sendTargetedMessage(userId, annotation, UI.generic('Comic', res));
-    });
+    xkcd.get(_.first(params)).then(res => postCard(message, annotation, res));
  });
