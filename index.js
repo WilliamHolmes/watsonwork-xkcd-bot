@@ -44,9 +44,9 @@ const postComic =  (data, spaceId) => {
 
 const postCard = (message, annotation, data) => {
     const { userId } = message;
-    const { alt = 'alt', title = 'title', subTitle = 'subTitle', day, month, year } = data;
+    const { alt, title, num, day, month, year } = data;
     const date = +(new Date(`${month}/${day}/${year}`));
-    const card = UI.card(title, subTitle, alt, [UI.cardButton(constants.BUTTON_SHARE, 'some_action_id')], date);
+    const card = UI.card(title, num, alt, [UI.cardButton(constants.BUTTON_SHARE, 'some_action_id')], date);
     app.sendTargetedMessage(userId, annotation, [card]);
 }
 
