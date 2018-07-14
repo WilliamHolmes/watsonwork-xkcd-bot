@@ -99,7 +99,7 @@ const onActionSelected = (message, annotation) => {
     if (actionId.includes(constants.ACTION_ID)) {
         const data = JSON.parse(strings.chompLeft(actionId, constants.ACTION_ID));
         switch (data) {
-            case constant.ACTION_RANDOM:
+            case constants.ACTION_RANDOM:
                 return getRandomComic(message, annotation);
             default:
                 return postComic(data, message.spaceId).then(() => onComicShared(message, annotation, data)).catch(err => onComicError(message, annotation, error));
