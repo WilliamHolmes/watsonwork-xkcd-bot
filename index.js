@@ -82,7 +82,7 @@ const onMessageReceived = message => {
 };
 
 const getRandomComic = (message, annotation) => {
-    xkcd.latest().then(data => postRandomCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
+    xkcd.random().then(data => postRandomCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
 }
 
 const getLatestComic = (message, annotation) => {
@@ -97,12 +97,12 @@ const getComicById = (message, annotation, params) => {
 const onActionSelected = (message, annotation) => {
     const { actionId = '' } = annotation;
     if (actionId.includes(constants.ACTION_ID)) {
-        const data = JSON.parse(strings.chompLeft(actionId, constants.ACTION_ID));
-        switch (data) {
+        const action = strings.chompLeft(actionId, constants.ACTION_ID);
+        switch (action) {
             case constants.ACTION_RANDOM:
                 return getRandomComic(message, annotation);
             default:
-                return postComic(data, message.spaceId).then(() => onComicShared(message, annotation, data)).catch(err => onComicError(message, annotation, error));
+                return postComic(JSON.parse(action), message.spaceId).then(() => onComicShared(message, annotation, data)).catch(err => onComicError(message, annotation, error));
         }
     }
 }

@@ -5,7 +5,8 @@
   "author": "William Holmes <holmesw@ie.ibm.com>",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "concurrently \"node ./node_modules/watsonworkspace-ngrok/index.js\" \"nodemon --inspect ./index.js\""
   },
   "keywords": [
     "watsonworkspace",
