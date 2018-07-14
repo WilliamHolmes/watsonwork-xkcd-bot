@@ -94,7 +94,8 @@ const getComicById = (message, annotation, params) => {
     xkcd.get(comicId).then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
 };
 
-const shareComic = (message, annotation, data) => {
+const shareComic = (message, annotation, action) => {
+    const data =  JSON.parse(action);
     postComic(data, message.spaceId).then(() => onComicShared(message, annotation, data)).catch(error => onComicError(message, annotation, error));
 }
 
@@ -106,7 +107,7 @@ const onActionSelected = (message, annotation) => {
             case constants.ACTION_RANDOM:
                 return getRandomComic(message, annotation);
             default:
-                return shareComic(message, annotation, JSON.parse(action));
+                return shareComic(message, annotation, action);
         }
     }
 }
