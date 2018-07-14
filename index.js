@@ -60,8 +60,8 @@ const postCard = (message, annotation, data, buttons = []) => {
     app.sendTargetedMessage(userId, annotation, [card]);
 }
 
-const postRandomCard = (...args) => {
-    postCard(...args, [UI.cardButton(constants.BUTTON_MORE, `${constants.ACTION_ID}${constant.ACTION_RANDOM}`)]);
+const postRandomCard = (message, annotation, data) => {
+    return postCard(message, annotation, data, [UI.cardButton(constants.BUTTON_MORE, `${constants.ACTION_ID}${constants.ACTION_RANDOM}`)]);
 }
 
 const onComicError = (message, annotation, error) => {
@@ -77,6 +77,15 @@ const getRandomComic = (message, annotation) => {
     xkcd.latest().then(data => postRandomCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
 }
 
+const getLatestComic = (message, annotation) => {
+    xkcd.latest().then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
+};
+
+const getComicById = (message, annotation, params) => {
+    const comicId = _.first(params);
+    xkcd.get(comicId).then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
+ };
+
 app.on('message-created', message => {
     const { content = '', spaceId } = message;
     _.each(content.match(constants.regex.XKCD), url => {
@@ -86,25 +95,20 @@ app.on('message-created', message => {
 
 app.on('actionSelected:/RANDOM', getRandomComic);
 
-app.on('actionSelected:/LATEST', (message, annotation) => {
-    xkcd.latest().then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
-});
+app.on('actionSelected:/LATEST', getLatestComic);
 
-app.on('actionSelected:/GET', (message, annotation, params) => {
-    const comicId = _.first(params);
-    xkcd.get(comicId).then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
- });
+app.on('actionSelected:/GET', getComicById);
 
 app.on('actionSelected', (message, annotation) => {
     const { actionId = '' } = annotation;
     if (actionId.includes(constants.ACTION_ID)) {
-        const { spaceId } = message;
         const data = JSON.parse(strings.chompLeft(actionId, constants.ACTION_ID));
         switch (data) {
             case constant.ACTION_RANDOM:
-                getRandomComic(message, annotation);
+                return getRandomComic(message, annotation);
             default:
-                postComic(data, spaceId).then(() => onComicShared(message, annotation, data)).catch(err => onComicError(message, annotation, error));
+                const { spaceId } = message;
+                return postComic(data, spaceId).then(() => onComicShared(message, annotation, data)).catch(err => onComicError(message, annotation, error));
         }
     }
 });

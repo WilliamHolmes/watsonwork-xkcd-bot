@@ -4,7 +4,7 @@ const ID = _.now();
 
 const constants = {
     ACTION_ID: `${ID}-xkcd-share|`,
-    ACTION_RANDOM: `RANDOM`,
+    ACTION_RANDOM: `RANDOM_CARD`,
     COLOR_ERROR: '#6E7B91',
     regex: {
         IMG: 'https://imgs.xkcd.com/comics/',
