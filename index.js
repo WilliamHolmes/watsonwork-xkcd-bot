@@ -1,6 +1,5 @@
 const _ = require('underscore');
 const del = require('delete');
-// const fetch = require('node-fetch');
 
 const fs = require('fs');
 const request = require('request');
@@ -31,17 +30,17 @@ const sendErrorMessage = (spaceId, url) => {
 
 const getName = url => _.last(url.split('/'));
 
-const postComic =  (data, spaceId) => {
+const postComic = (data, spaceId) => {
     const { img } = data;
     const dest = `${constants.TEMP_DIR}/${getName(img)}`;
     return new Promise((resolve, reject) => {
         request(img).pipe(fs.createWriteStream(dest)
-        .on('error', reject)
-        .on('finish', () => {
-            app.sendFile(spaceId, dest);
-            del.sync(dest, { force: true });
-            resolve();
-        })).on('error', reject);
+            .on('error', reject)
+            .on('finish', () => {
+                app.sendFile(spaceId, dest);
+                del.sync(dest, { force: true });
+                resolve();
+            })).on('error', reject);
     })
 }
 
@@ -73,6 +72,15 @@ const onComicShared = (message, annotation, data) => {
     postAnnotation(message, annotation, `Comic #${num} - ${title}`, constants.COMIC_SHARED);
 }
 
+// EVENT Handlers
+
+const onMessageReceived = message => {
+    const { content = '', spaceId } = message;
+    _.each(content.match(constants.regex.XKCD), url => {
+        xkcd.get(getName(url)).then(data => postComic(data, spaceId)).catch(() => sendErrorMessage(spaceId, url));
+    });
+};
+
 const getRandomComic = (message, annotation) => {
     xkcd.latest().then(data => postRandomCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
 }
@@ -84,22 +92,9 @@ const getLatestComic = (message, annotation) => {
 const getComicById = (message, annotation, params) => {
     const comicId = _.first(params);
     xkcd.get(comicId).then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
- };
+};
 
-app.on('message-created', message => {
-    const { content = '', spaceId } = message;
-    _.each(content.match(constants.regex.XKCD), url => {
-        xkcd.get(getName(url)).then(data => postComic(data, spaceId)).catch(() => sendErrorMessage(spaceId, url));
-    });
-});
-
-app.on('actionSelected:/RANDOM', getRandomComic);
-
-app.on('actionSelected:/LATEST', getLatestComic);
-
-app.on('actionSelected:/GET', getComicById);
-
-app.on('actionSelected', (message, annotation) => {
+const onActionSelected = (message, annotation) => {
     const { actionId = '' } = annotation;
     if (actionId.includes(constants.ACTION_ID)) {
         const data = JSON.parse(strings.chompLeft(actionId, constants.ACTION_ID));
@@ -107,8 +102,19 @@ app.on('actionSelected', (message, annotation) => {
             case constant.ACTION_RANDOM:
                 return getRandomComic(message, annotation);
             default:
-                const { spaceId } = message;
-                return postComic(data, spaceId).then(() => onComicShared(message, annotation, data)).catch(err => onComicError(message, annotation, error));
+                return postComic(data, message.spaceId).then(() => onComicShared(message, annotation, data)).catch(err => onComicError(message, annotation, error));
         }
     }
-});
+}
+
+// EVENTS
+
+app.on('message-created', onMessageReceived);
+
+app.on('actionSelected:/RANDOM', getRandomComic);
+
+app.on('actionSelected:/LATEST', getLatestComic);
+
+app.on('actionSelected:/GET', getComicById);
+
+app.on('actionSelected', onActionSelected);
