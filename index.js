@@ -50,14 +50,18 @@ const postAnnotation = (message, annotation, title = '', description = '') => {
     app.sendTargetedMessage(userId, annotation, UI.generic(title, description));
 }
 
-const postCard = (message, annotation, data) => {
+const postCard = (message, annotation, data, buttons = []) => {
     const { userId } = message;
     const { alt, title, num, day, month, year, img } = data;
     const date = +(new Date(`${month}/${day}/${year}`));
     const subTitle = `Comic #${num}`;
     const actionId = `${constants.ACTION_ID}${JSON.stringify({ alt, title, num, day, month, year, img })}`;
-    const card = UI.card(title, subTitle, alt, [UI.cardButton(constants.BUTTON_SHARE, actionId)], date);
+    const card = UI.card(title, subTitle, alt, [UI.cardButton(constants.BUTTON_SHARE, actionId), ...buttons], date);
     app.sendTargetedMessage(userId, annotation, [card]);
+}
+
+const postRandomCard = (...args) => {
+    postCard(...args, [UI.cardButton(constants.BUTTON_MORE, `${constants.ACTION_ID}${constant.ACTION_RANDOM}`)]);
 }
 
 const onComicError = (message, annotation, error) => {
@@ -69,6 +73,10 @@ const onComicShared = (message, annotation, data) => {
     postAnnotation(message, annotation, `Comic #${num} - ${title}`, constants.COMIC_SHARED);
 }
 
+const getRandomComic = (message, annotation) => {
+    xkcd.latest().then(data => postRandomCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
+}
+
 app.on('message-created', message => {
     const { content = '', spaceId } = message;
     _.each(content.match(constants.regex.XKCD), url => {
@@ -76,9 +84,7 @@ app.on('message-created', message => {
     });
 });
 
-app.on('actionSelected:/RANDOM', (message, annotation) => {
-    xkcd.random().then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
-});
+app.on('actionSelected:/RANDOM', getRandomComic);
 
 app.on('actionSelected:/LATEST', (message, annotation) => {
     xkcd.latest().then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
@@ -94,6 +100,11 @@ app.on('actionSelected', (message, annotation) => {
     if (actionId.includes(constants.ACTION_ID)) {
         const { spaceId } = message;
         const data = JSON.parse(strings.chompLeft(actionId, constants.ACTION_ID));
-        postComic(data, spaceId).then(() => onComicShared(message, annotation, data)).catch(err => onComicError(message, annotation, error));
+        switch (data) {
+            case constant.ACTION_RANDOM:
+                getRandomComic(message, annotation);
+            default:
+                postComic(data, spaceId).then(() => onComicShared(message, annotation, data)).catch(err => onComicError(message, annotation, error));
+        }
     }
 });
