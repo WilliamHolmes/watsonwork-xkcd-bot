@@ -56,8 +56,7 @@ const postComic = (data, spaceId) => {
 }
 
 const postAnnotation = (message, annotation, title = '', description = '') => {
-    const { userId } = message;
-    app.sendTargetedMessage(userId, annotation, UI.generic(title, description));
+    app.sendTargetedMessage(message.userId, annotation, UI.generic(title, description));
 }
 
 const getCard = (data, buttons = []) => {
@@ -68,23 +67,14 @@ const getCard = (data, buttons = []) => {
     return UI.card(title, subTitle, alt, [UI.cardButton(constants.BUTTON_SHARE, actionId), ...buttons], date);
 };
 
-const getCards = items => _.map(items, card => {
-    const { title, description, url, created } = card;
-    const { day, month, year } = getDate(created);
-    const num = url.match(constants.regex.NUM)[1];
-    const alt = strings.between(description, 'title="', '"');
-    const img = strings.between(description, 'src="', '"');
-    return getCard({ alt, title, num, day, month, year, img });
-});
+const getCards = data => _.map(data, card => getCard(card));
 
-const postCard = (message, annotation, data, buttons = []) => {
-    const { userId } = message;
-    const card = getCard(data, buttons);
-    app.sendTargetedMessage(userId, annotation, [card]);
+const postCard = (message, annotation, data, buttons) => {
+    app.sendTargetedMessage(message.userId, annotation, [getCard(data, buttons)]);
 }
 
 const postCards = (message, annotation, data) => {
-    app.sendTargetedMessage(message.userId, annotation, getCards(data.items));
+    app.sendTargetedMessage(message.userId, annotation, getCards(data));
 };
 
 const postRandomCard = (message, annotation, data) => {
@@ -146,11 +136,18 @@ const onActionSelected = (message, annotation) => {
     }
 }
 
+const parseFeed = data => {
+    return _.map(data.items, ({ title, description, url, created }) => {
+        const { day, month, year } = getDate(created);
+        const num = url.match(constants.regex.NUM)[1];
+        const alt = strings.between(description, 'title="', '"');
+        const img = strings.between(description, 'src="', '"');
+        return { alt, title, num, day, month, year, img }
+    });
+}
+
 const getRecentComics = (message, annotation) => {
-    getFeed().then(data => {
-        // console.log('getRecentComics', data);
-        postCards(message, annotation, data);
-    }).catch(error => onComicError(message, annotation, error));
+    getFeed().then(data => postCards(message, annotation, parseFeed(data))).catch(error => onComicError(message, annotation, error));
 }
 
 // EVENTS
