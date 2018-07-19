@@ -4,8 +4,6 @@ const del = require('delete');
 const fs = require('fs');
 const request = require('request');
 
-const feed = require('rss-to-json');
-
 const appFramework = require('watsonworkspace-bot');
 appFramework.level('verbose');
 appFramework.startServer();
@@ -31,15 +29,6 @@ const sendErrorMessage = (spaceId, url) => {
 }
 
 const getName = url => _.last(url.split('/'));
-
-const getDate = date => {
-    const d = new Date(date);
-    return {
-        month: d.getUTCMonth() + 1,
-        year: d.getUTCFullYear(),
-        day: d.getUTCDate()
-    }
-}
 
 const postComic = (data, spaceId) => {
     const { img } = data;
@@ -90,12 +79,6 @@ const onComicShared = (message, annotation, data) => {
     postAnnotation(message, annotation, `Comic #${num} - ${title}`, constants.COMIC_SHARED);
 }
 
-const getFeed = () => {
-    return new Promise((resolve, reject) => {
-        feed.load(constants.FEED, (err, rss) => err ? reject(err) : resolve(rss));
-    });
-};
-
 // EVENT Handlers
 
 const onMessageReceived = message => {
@@ -118,6 +101,10 @@ const getComicById = (message, annotation, params) => {
     xkcd.get(comicId).then(data => postCard(message, annotation, data)).catch(error => onComicError(message, annotation, error));
 };
 
+const getRecentComics = (message, annotation) => {
+    xkcd.feed().then(data => postCards(message, annotation, data)).catch(error => onComicError(message, annotation, error));
+}
+
 const shareComic = (message, annotation, action) => {
     const data =  JSON.parse(action);
     postComic(data, message.spaceId).then(() => onComicShared(message, annotation, data)).catch(error => onComicError(message, annotation, error));
@@ -136,19 +123,6 @@ const onActionSelected = (message, annotation) => {
     }
 }
 
-const parseFeed = data => {
-    return _.map(data.items, ({ title, description, url, created }) => {
-        const { day, month, year } = getDate(created);
-        const num = url.match(constants.regex.NUM)[1];
-        const alt = strings.between(description, 'title="', '"');
-        const img = strings.between(description, 'src="', '"');
-        return { alt, title, num, day, month, year, img }
-    });
-}
-
-const getRecentComics = (message, annotation) => {
-    getFeed().then(data => postCards(message, annotation, parseFeed(data))).catch(error => onComicError(message, annotation, error));
-}
 
 // EVENTS
 
