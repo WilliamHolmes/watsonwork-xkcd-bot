@@ -161,7 +161,7 @@ app.on('actionSelected:/RANDOM', getRandomComic);
 
 app.on('actionSelected:/LATEST', getLatestComic);
 
-app.on('actionSelected:/RECENT', getRecentComics);
+app.on('actionSelected:/FEED', getRecentComics);
 
 app.on('actionSelected:/GET', getComicById);
 
